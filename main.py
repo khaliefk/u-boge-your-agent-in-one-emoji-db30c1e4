@@ -18,11 +18,17 @@ Standard library only. No network, no secrets, no input files.
 import sys
 from pathlib import Path
 
-ENTRY = "\U0001F9DE"  # GENIE - exactly one character
+ENTRY = "\U0001F9DE"  # GENIE - exactly one character (one code point, 4 UTF-8 bytes).
+# The gate counts characters, not bytes, so the 4-byte encoding is fine.
 DEFAULT_OUTPUT = "/output/entry.txt"
 
 
 def main(argv):
+    # Self-check against the gate before writing: 1-16 characters,
+    # not only white space, so a bad ENTRY fails loudly here instead
+    # of silently producing an invalid entry file.
+    if not 1 <= len(ENTRY) <= 16 or not ENTRY.strip():
+        raise SystemExit(f"ENTRY fails the 1-16 character gate: {ENTRY!r}")
     target = Path(argv[1] if len(argv) > 1 else DEFAULT_OUTPUT)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(ENTRY, encoding="utf-8")
